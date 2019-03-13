@@ -1,0 +1,15 @@
+body {
+    width: 450px;
+    height: 600px;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.center_container {
+    text-align: center;
+}
