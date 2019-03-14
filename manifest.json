@@ -19,6 +19,7 @@
         {
             "matches": ["<all_urls>"],
             "js": ["js/jquery.min.js", "js/content_script.js"],
+            "css": ["css/content_script.css"],
             "run_at": "document_start"
         }
     ]
