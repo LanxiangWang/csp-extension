@@ -1,5 +1,6 @@
 let bg = chrome.extension.getBackgroundPage();
 let url = '';
+let directiveMap = new Map();
 
 function sendMessageToContentScript(message, callback) {
     chrome.tabs.query({
@@ -39,29 +40,44 @@ function getCSPFromHeaders() {
 }
 
 
-document.getElementById('testBtn').addEventListener('click', function() {
-    if (url === '') {
-        console.log('error on url');
-    } else {
-        bg.checkUrl(url);
-    }
+// document.getElementById('testBtn').addEventListener('click', function() {
+//     if (url === '') {
+//         console.log('error on url');
+//     } else {
+//         bg.checkUrl(url);
+//     }
 
-    sendMessageToContentScript({action: 'changeStopStatus'}, function() {
-        console.log('stop status has been changed');
-    });
+//     sendMessageToContentScript({action: 'changeStopStatus'}, function() {
+//         console.log('stop status has been changed');
+//     });
 
-    sendMessageToContentScript({action: 'refresh'}, function() {
-        console.log('refresh current page');
-    })
-})
+//     sendMessageToContentScript({action: 'refresh'}, function() {
+//         console.log('refresh current page');
+//     })
+// })
 
 Promise.all([getCSPFromHeaders(), getCSPFromDOM()]).then(values => {
     let directives = values[0] || values[1];
     console.log('directives: ', directives);
     processCSP(directives);
+    displayCSP(directives);
 });
 
-function processCSP(csp) {
+function processCSP(directives) {
+    let directivesAry = directives.split(';');
+    directivesAry.map(directive => {
+        if (directive != '') {
+            let cutIndex = directive.indexOf(' ');
+            let name = directive.substring(0, cutIndex);
+            let value = directive.substring(cutIndex + 1);
+            let directiveArray = value.split(' ');
+            directiveMap.set(name, directiveArray);
+        }
+    });
+    console.log('map: ', directiveMap);
+}
+
+function displayCSP(csp) {
     let directivesAry = csp.split(';');
     directivesAry.map(each => {
         if (each !== '') {
@@ -106,12 +122,52 @@ function addRowIntoTable(directive) {
     let bodyDiv = document.createElement('div');
     bodyDiv.setAttribute('class', 'card-body');
     valueAry.map(each => {
-        let p = document.createElement('p');
-        p.innerHTML = each;
-        bodyDiv.appendChild(p);
+        let input = document.createElement('input');
+        input.setAttribute('type', 'checkbox');
+        input.setAttribute('name', name);
+        input.value = each;
+        input.onchange = (event) => {
+            let valueArray = directiveMap.get(name);
+            if (!input.checked) {
+                let index = valueArray.indexOf(each);
+                if (index > -1) {
+                    valueArray.splice(index, 1);
+                }
+            } else {
+                valueArray.push(each);
+            }
+            console.log('after change: ', directiveMap);
+        }
+        input.setAttribute('checked', true);
+        
+        let label = document.createElement('label');
+        label.appendChild(document.createTextNode(each));
+
+        let br = document.createElement('br');
+        bodyDiv.appendChild(input);
+        bodyDiv.appendChild(label);
+        bodyDiv.appendChild(br);
     })
     valueDiv.appendChild(bodyDiv);
     mainDiv.appendChild(valueDiv);
 
     section.appendChild(mainDiv);
+}
+
+document.getElementById('form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    bg.modifyCSP(url, toString(directiveMap));
+})
+
+function toString(map) {
+    let res = "";
+    directiveMap.forEach((value, key, map) => {
+        console.log('key is: ', key, ' and value is: ', value);
+        res += key;
+        value.map(each => {
+            res += " " + each;
+        });
+        res += ";";
+    });
+    return res;
 }

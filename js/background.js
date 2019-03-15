@@ -36,3 +36,8 @@ function getCSPHeader(url) {
 function checkUrl(url) {
     isCheckedMap.set(url, true);
 }
+
+function modifyCSP(url, modifiedCSP) {
+    map.set(url, modifiedCSP);
+    console.log('modified: ', map);
+}

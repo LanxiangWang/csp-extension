@@ -49,7 +49,7 @@ body {
     transition: background-color .3s;
 }
 
-.my_btn:hover, .btn:focus {
+.my_btn:hover, .my_btn:focus {
     background-color: #27ae60;
 }
 
