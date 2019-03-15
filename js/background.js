@@ -11,7 +11,6 @@ chrome.webRequest.onHeadersReceived.addListener(details => {
             if (header.name === 'content-security-policy') {
                 map.set(url, header.value);
                 console.log(url, ' contains CSP: ', header.value);
-                return;
             }
         })
         

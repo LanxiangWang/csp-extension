@@ -58,4 +58,60 @@ document.getElementById('testBtn').addEventListener('click', function() {
 Promise.all([getCSPFromHeaders(), getCSPFromDOM()]).then(values => {
     let directives = values[0] || values[1];
     console.log('directives: ', directives);
-})
+    processCSP(directives);
+});
+
+function processCSP(csp) {
+    let directivesAry = csp.split(';');
+    directivesAry.map(each => {
+        if (each !== '') {
+            addRowIntoTable(each);
+        }
+    })
+}
+
+function addRowIntoTable(directive) {
+    let cutIndex = directive.indexOf(' ');
+    let name = directive.substring(0, cutIndex);
+    let value = directive.substring(cutIndex + 1);
+    let valueAry = value.split(' ');
+
+    let section = document.getElementById('directive_section');
+
+    let mainDiv = document.createElement('div');
+    mainDiv.setAttribute('class', 'card card-1');
+
+    let newDiv = document.createElement('div');
+    newDiv.setAttribute('class', 'card-header');
+    newDiv.setAttribute('id', 'heading_' + name);
+    let h2 = document.createElement('h2');
+    h2.setAttribute('class', 'mb-0');
+    newDiv.appendChild(h2);
+    let newButton = document.createElement('button');
+    newButton.setAttribute('class', 'btn btn-link collapsed');
+    newButton.setAttribute('type', 'button');
+    newButton.setAttribute('data-toggle', 'collapse');
+    newButton.setAttribute('data-target', '#' + name);
+    newButton.setAttribute('aria-expanded', 'false');
+    newButton.setAttribute('aria-controls', name);
+    newButton.innerHTML = name;
+    h2.appendChild(newButton);
+    mainDiv.appendChild(newDiv);
+
+    let valueDiv = document.createElement('div');
+    valueDiv.setAttribute('id', name);
+    valueDiv.setAttribute('class', 'collapse');
+    valueDiv.setAttribute('aria-labelledby', 'heading_' + name);
+    valueDiv.setAttribute('data-parent', '#directive_section');
+    let bodyDiv = document.createElement('div');
+    bodyDiv.setAttribute('class', 'card-body');
+    valueAry.map(each => {
+        let p = document.createElement('p');
+        p.innerHTML = each;
+        bodyDiv.appendChild(p);
+    })
+    valueDiv.appendChild(bodyDiv);
+    mainDiv.appendChild(valueDiv);
+
+    section.appendChild(mainDiv);
+}
